@@ -5,12 +5,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ResponseTest {
-    private Response response;
+public class HttpResponseTest {
+    private HttpResponse response;
 
     @BeforeEach
     public void before() {
-        response = new Response();
+        response = new HttpResponse();
     }
 
     @Test

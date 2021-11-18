@@ -6,6 +6,7 @@ import java.net.Socket;
 
 public class Server {
     private static final int DEFAULT_PORT = 3000;
+    private String pathToWebApp;
     private Url url;
 
     public Server(String hostName) {
@@ -16,7 +17,7 @@ public class Server {
         url = new Url(hostName, port);
     }
 
-    public void listen(String path) throws IOException {
+    public void listen() throws IOException {
         ServerSocket serverSocket = new ServerSocket(url.getPort());
 
         while(true) {
@@ -31,11 +32,13 @@ public class Server {
                 String requestText = countOfBytes >= 0 ? new String(inputBytes, 0, countOfBytes) : "";
 
                 // Parse client request
-                Request request = new Request(requestText);
-                Response response = new Response();
+                HttpRequest request = new HttpRequest(requestText);
+                HttpResponse response = new HttpResponse();
 
-                // check if request path contains required path
-                if(!request.getPath().contains(path)) {
+                // check if request path contains required
+                String pathToResource = pathToWebApp + request.getQueryUri();
+                Resource resource = new Resource(pathToResource);
+                if(!new File(pathToResource).exists()) {
                     response.setStatus(404);
                     response.setContentType(ContentType.HTML);
                     response.setContent("<h1>404 Not Found</h1>");
@@ -44,12 +47,11 @@ public class Server {
                 }
 
                 // get file content
-                Resource resource = new Resource(request.getPath());
                 byte[] content = new byte[1024 * 1024 * 4]; // 4 MB
                 int bytesCount = resource.load(content);
 
                 // write to outputStream
-                ContentType contentType = resource.getContentType();
+                ContentType contentType = request.getContentType();
                 response.setStatus(200);
                 response.setContentType(contentType);
 
@@ -73,5 +75,9 @@ public class Server {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setWebAppPath(String pathToWebApp) {
+        this.pathToWebApp = pathToWebApp;
     }
 }

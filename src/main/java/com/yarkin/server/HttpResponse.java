@@ -2,7 +2,7 @@ package com.yarkin.server;
 
 import java.util.HashMap;
 
-public class Response {
+public class HttpResponse {
     private ContentType contentType = ContentType.HTML;
     private int statusCode;
     private String content;

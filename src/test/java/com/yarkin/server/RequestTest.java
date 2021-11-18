@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class RequestTest {
     private String requestString;
-    Request request;
+    HttpRequest request;
     @BeforeEach
     public void before() {
         requestString = "GET / HTTP/1.1\n" +
@@ -22,7 +22,7 @@ public class RequestTest {
                 "Sec-Fetch-Mode: navigate\n" +
                 "Sec-Fetch-Site: none\n" +
                 "Sec-Fetch-User: ?1\n\nHello there";
-        request = new Request(requestString);
+        request = new HttpRequest(requestString);
     }
 
     @Test
@@ -33,9 +33,9 @@ public class RequestTest {
                         "User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru; rv:1.9b5) Gecko/2008050509 Firefox/3.0b5\n" +
                         "Accept: text/html\n" +
                         "Connection: close\n\nbody";
-        Request request = new Request(httpRequest);
+        HttpRequest request = new HttpRequest(httpRequest);
 
-        assertEquals("/api/v1/test", request.getPath());
+        assertEquals("/api/v1/test/index.html", request.getQueryUri());
     }
 
     @Test
@@ -46,11 +46,11 @@ public class RequestTest {
                         "Accept: text/html\n" +
                         "Connection: close\n";
         assertThrows(IllegalStateException.class, () -> {
-            new Request(httpRequest);
+            new HttpRequest(httpRequest);
         });
 
         try {
-            new Request(httpRequest);
+            new HttpRequest(httpRequest);
         } catch (Throwable e) {
             assertEquals("Request not correspond to HTTP format. Missing HTTP header", e.getMessage());
         }
@@ -63,9 +63,9 @@ public class RequestTest {
                 "User-Agent: Mozilla/5.0 (X11; U; Linux i686; ru; rv:1.9b5) Gecko/2008050509 Firefox/3.0b5\n" +
                 "Accept: text/html\n" +
                 "Connection: close\n";
-        Request request = new Request(httpRequest);
+        HttpRequest request = new HttpRequest(httpRequest);
 
-        assertEquals("/", request.getPath());
+        assertEquals("/index.html", request.getQueryUri());
     }
 
     @Test
@@ -83,9 +83,9 @@ public class RequestTest {
                 "Sec-Fetch-Site: none\n" +
                 "Sec-Fetch-User: ?1\n";
 
-        Request request = new Request(requestString);
+        HttpRequest request = new HttpRequest(requestString);
 
-        assertEquals("/", request.getPath());
+        assertEquals("/index.html", request.getQueryUri());
     }
 
     @Test
@@ -120,7 +120,7 @@ public class RequestTest {
                 "Sec-Fetch-Site: none\n" +
                 "Sec-Fetch-User: ?1\n";
 
-        request = new Request(requestString);
+        request = new HttpRequest(requestString);
 
         String[] expected = {
                 "GET / HTTP/1.1" ,
@@ -182,8 +182,15 @@ public class RequestTest {
                 "Sec-Fetch-Site: none\n" +
                 "Sec-Fetch-User: ?1\n";
 
-        request = new Request(requestString);
+        request = new HttpRequest(requestString);
 
         assertEquals(null, request.getBody());
+    }
+
+    @Test
+    public void getContentTypeFromPath() {
+        ContentType expected = ContentType.HTML;
+        ContentType actual = request.getContentType();
+        assertEquals(expected, actual);
     }
 }
