@@ -16,46 +16,51 @@ public class Server {
         url = new Url(hostName, port);
     }
 
-    public Server(Url url) {
-        this.url = url;
-    }
-
     public void listen(String path) throws IOException {
-        Resource resource = new Resource(path);
         ServerSocket serverSocket = new ServerSocket(url.getPort());
-        // start web server I\O and accept()
+
         while(true) {
             try (Socket socket = serverSocket.accept();
                  BufferedReader reader = new BufferedReader(
                          new InputStreamReader(socket.getInputStream()));
                  BufferedWriter writer = new BufferedWriter(
                          new OutputStreamWriter(socket.getOutputStream()));) {
-                // Receive data from server
+                // Obtain data from client
                 char[] inputBytes = new char[32 * 1024]; // 32KB
                 int countOfBytes = reader.read(inputBytes);
-                String requestText = new String(inputBytes, 0, countOfBytes);
+                String requestText = countOfBytes >= 0 ? new String(inputBytes, 0, countOfBytes) : "";
 
                 // Parse client request
                 Request request = new Request(requestText);
                 Response response = new Response();
 
-                // check if at the path exists index resource
-                if(!request.getPath().equals(path) || !resource.isExists()) {
+                // check if request path contains required path
+                if(!request.getPath().contains(path)) {
                     response.setStatus(404);
+                    response.setContent("<h1>404 Not Found</h1>", ContentType.HTML);
                     writer.write(response.getHttp());
                     continue;
                 }
 
-                // load index file
-                String content = resource.loadIndex();
+                // get file content
+                Resource resource = new Resource(request.getPath());
+                byte[] content = new byte[1024 * 1024 * 4]; // 4 MB
+                int bytesCount = resource.load(content);
 
-                // write to outputStream & again ->
+                // write to outputStream
                 response.setStatus(200);
-                writer.write(response.getHttp());
+                if(bytesCount != 0) {
+                    ContentType contentType = resource.getContentType();
+                    if(contentType.equals(ContentType.PNG) || contentType.equals(ContentType.JPEG)) {
+                        writer.write(response.getHttp());
+                        writer.write("\n");
+                        socket.getOutputStream().write(content, 0, bytesCount);
+                    } else {
+                        response.setContent(new String(content, 0, bytesCount), contentType);
+                        writer.write(response.getHttp());
+                    }
+                }
             }
         }
-
-
-
     }
 }

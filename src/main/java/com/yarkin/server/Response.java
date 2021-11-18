@@ -1,10 +1,40 @@
 package com.yarkin.server;
 
+import java.util.HashMap;
+
 public class Response {
-    public void setStatus(int i) {
+    private ContentType contentType = ContentType.HTML;
+    private int statusCode;
+    private String content;
+    private HashMap<Integer, String> statusCodes = new HashMap<>();
+
+    {
+        statusCodes.put(200, "OK");
+        statusCodes.put(404, "Not Found");
+    }
+
+    public void setStatus(int status) {
+        this.statusCode = status;
+    }
+
+    public void setContent(String content, ContentType contentType) {
+        this.content = content;
+        this.contentType = contentType;
     }
 
     public String getHttp() {
-        return null;
+        StringBuilder response = new StringBuilder("HTTP/1.1 ");
+        response.append(statusCode + " ");
+        response.append(statusCodes.get(statusCode));
+        response.append("\n");
+        response.append("Content-Type: ");
+        response.append(contentType);
+        response.append("\n");
+
+        if(content != null) {
+            response.append("\n");
+            response.append(content);
+        }
+        return response.toString();
     }
 }
