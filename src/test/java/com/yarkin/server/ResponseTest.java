@@ -16,7 +16,8 @@ public class ResponseTest {
     @Test
     public void constructSuccessResponseAndGetHttp() {
         response.setStatus(200);
-        response.setContent("Hello there", ContentType.TEXT);
+        response.setContentType(ContentType.TEXT);
+        response.setContent("Hello there");
         String expected = "HTTP/1.1 200 OK\nContent-Type: text/plain\n\n" +
                             "Hello there";
         String actual = response.getHttp();

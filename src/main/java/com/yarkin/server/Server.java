@@ -37,7 +37,8 @@ public class Server {
                 // check if request path contains required path
                 if(!request.getPath().contains(path)) {
                     response.setStatus(404);
-                    response.setContent("<h1>404 Not Found</h1>", ContentType.HTML);
+                    response.setContentType(ContentType.HTML);
+                    response.setContent("<h1>404 Not Found</h1>");
                     writer.write(response.getHttp());
                     continue;
                 }
@@ -48,18 +49,26 @@ public class Server {
                 int bytesCount = resource.load(content);
 
                 // write to outputStream
+                ContentType contentType = resource.getContentType();
                 response.setStatus(200);
-                if(bytesCount != 0) {
-                    ContentType contentType = resource.getContentType();
-                    if(contentType.equals(ContentType.PNG) || contentType.equals(ContentType.JPEG)) {
-                        writer.write(response.getHttp());
-                        writer.write("\n");
-                        socket.getOutputStream().write(content, 0, bytesCount);
-                    } else {
-                        response.setContent(new String(content, 0, bytesCount), contentType);
-                        writer.write(response.getHttp());
-                    }
+                response.setContentType(contentType);
+
+                if(bytesCount <= 0) {
+                    writer.write(response.getHttp());
+                    continue;
                 }
+
+                if(contentType.equals(ContentType.PNG) || contentType.equals(ContentType.JPEG)) {
+                    writer.write(response.getHttp());
+                    writer.write("\n");
+                    socket.getOutputStream().write(content, 0, bytesCount);
+                    continue;
+                }
+
+                response.setContent(new String(content, 0, bytesCount));
+                writer.write(response.getHttp());
+            } catch(IllegalStateException e) {
+                e.printStackTrace();
             }
         }
     }

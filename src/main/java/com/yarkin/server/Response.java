@@ -17,8 +17,11 @@ public class Response {
         this.statusCode = status;
     }
 
-    public void setContent(String content, ContentType contentType) {
+    public void setContent(String content) {
         this.content = content;
+    }
+
+    public void setContentType(ContentType contentType) {
         this.contentType = contentType;
     }
 
