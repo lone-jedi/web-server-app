@@ -69,6 +69,8 @@ public class Server {
                 writer.write(response.getHttp());
             } catch(IllegalStateException e) {
                 e.printStackTrace();
+            } catch(Throwable e) {
+                e.printStackTrace();
             }
         }
     }
