@@ -7,20 +7,20 @@ import java.net.Socket;
 public class Server {
     private static final int DEFAULT_PORT = 3000;
     private String pathToWebApp;
-    private Url url;
+    private int port;
 
-    public Server(String hostName) {
-        this(hostName, DEFAULT_PORT);
+    public Server() {
+        this(DEFAULT_PORT);
     }
 
-    public Server(String hostName, int port) {
-        url = new Url(hostName, port);
+    public Server(int port) {
+        this.port = port;
     }
 
     public void listen() throws IOException {
-        ServerSocket serverSocket = new ServerSocket(url.getPort());
+        ServerSocket serverSocket = new ServerSocket(port);
 
-        while(true) {
+        while (true) {
             try (Socket socket = serverSocket.accept();
                  BufferedReader reader = new BufferedReader(
                          new InputStreamReader(socket.getInputStream()));
@@ -38,7 +38,7 @@ public class Server {
                 // check if request path contains required
                 String pathToResource = pathToWebApp + request.getQueryUri();
                 Resource resource = new Resource(pathToResource);
-                if(!new File(pathToResource).exists()) {
+                if (!new File(pathToResource).exists()) {
                     response.setStatus(404);
                     response.setContentType(ContentType.HTML);
                     response.setContent("<h1>404 Not Found</h1>");
@@ -55,12 +55,12 @@ public class Server {
                 response.setStatus(200);
                 response.setContentType(contentType);
 
-                if(bytesCount <= 0) {
+                if (bytesCount <= 0) {
                     writer.write(response.getHttp());
                     continue;
                 }
 
-                if(contentType.equals(ContentType.PNG) || contentType.equals(ContentType.JPEG)) {
+                if (contentType.equals(ContentType.PNG) || contentType.equals(ContentType.JPEG)) {
                     writer.write(response.getHttp());
                     writer.write("\n");
                     socket.getOutputStream().write(content, 0, bytesCount);
@@ -69,9 +69,9 @@ public class Server {
 
                 response.setContent(new String(content, 0, bytesCount));
                 writer.write(response.getHttp());
-            } catch(IllegalStateException e) {
+            } catch (IllegalStateException e) {
                 e.printStackTrace();
-            } catch(Throwable e) {
+            } catch (Throwable e) {
                 e.printStackTrace();
             }
         }
